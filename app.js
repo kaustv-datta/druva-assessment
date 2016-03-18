@@ -1,37 +1,59 @@
 var app = angular.module("watchApp",[]);
 
-app.directive('stopwatch', function () {
+/*app.directive('stopwatch', function () {
 	return {
 		restrict: 'E',
-		scope: {
-			name: '@'
-		},
+		scope: {},
 		templateUrl: 'stopwatch.html',
+//		bindToController: true,
+		controllerAs: 'watch',
 		controller: function () {
 			var self = this;
-			self.states = ['ready', 'inprogress', 'stopped'];
-			self.startTime = 0;
-			self.totalDuration = 0;
-			self.intervalId = undefined;
+			self.worker = new Worker('worker.js');
+			
+			self.worker.addEventListener('message', function(e) {
+				self.totalDuration = e.data;
+				console.log(self.totalDuration);
+			});
 			
 			self.log = function (data) {
 				console.log(data);
 			};
 			
 			self.start = function () {
-				self.startTime = Date.now();
-				self.intervalId = window.setInterval(self.startWatch, 4);
-			};
-			
-			self.startWatch = function () {
-				self.totalDuration = Date.now() - self.startTime;
+				console.log('start');
+				self.worker.postMessage({msg: 'start', time: Date.now()});
 			};
 			
 			self.stop = function () {
-				window.clearInterval(self.intervalId);
+				console.log('stop');
+				self.worker.postMessage({msg: 'stop', time: Date.now()});
 			};
-		},
-		bindToController: true,
-		controllerAs: 'watch'
+		}
+	};
+});*/
+
+app.directive('stopwatch', function () {
+	return {
+		restrict: 'E',
+		scope: {},
+		templateUrl: 'stopwatch.html',
+		link: function (scope, elem, attrs) {
+			scope.worker = new Worker('worker.js');
+			scope.totalDuration = 0;
+			
+			scope.worker.addEventListener('message', function(e) {
+				scope.totalDuration = e.data;
+				console.log(scope.totalDuration);
+			});
+			
+			scope.start = function () {
+				scope.worker.postMessage({msg: 'start', time: Date.now()});
+			};
+			
+			scope.stop = function () {
+				scope.worker.postMessage({msg: 'stop', time: Date.now()});
+			};
+		}
 	};
 });
