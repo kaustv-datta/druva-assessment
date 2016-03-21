@@ -1,47 +1,78 @@
-self.history = [];
-self.intervalId = undefined;
 self.postIntervalId = undefined;
-self.wstartTime = 0;
-self.wtotalDuration = 0;
+self.wStartTime = 0;
+self.wTotalDuration = 0;
+self.wLastSplit = 0;
 
 /**
  * msg.data = {msg: 'start/split/stop', time: 12143256}
  */
 
 self.onmessage = function (msg) {
+	console.log('worker onmessage');
 	
-    switch (msg.data.msg) {
+	var uiData = msg.data;
+	console.log(uiData);
+	
+    switch (uiData.msg) {
+    
         case 'start':
-        	self.wstartTime = msg.data.time;
-        	startWatch();
+        	startWatch(uiData.time);
             break;
+            
         case 'split':
+        	splitTime(uiData.time);
             break;
+            
         case 'stop':
-        	stopWatch();
+        	stopWatch(uiData.time);
             break;
+            
         default:
             throw 'no aTopic on incoming message to ChromeWorker';
     }
     
 };
 
-function startWatch() {
+function startWatch(time) {
 	
-	self.intervalId = setInterval(function () {
-		self.wtotalDuration = Date.now() - self.wstartTime;
-	}, 0);
+	self.wStartTime = time;
+	self.wLastSplit = time;
 	
 	self.postIntervalId = setInterval(function () {
-		postMessage(self.wtotalDuration);
-	}, 1000);
+		self.wTotalDuration = Date.now() - self.wStartTime;
+		
+		postMessage({
+			msg: 'update',
+			time: self.wTotalDuration
+		});
+	}, 0);
 	
 }
 
-function stopWatch() {
+function stopWatch(time) {
 	
-	clearInterval(self.intervalId);
+	postMessage({
+		msg: 'end',
+		time: {
+			totalDuration: time - self.wStartTime,
+			lapDuration: time - self.wLastSplit
+		}
+	});
 	clearInterval(self.postIntervalId);
 	self.close();
+	
+}
+
+function splitTime(time) {
+	
+	postMessage({
+		msg: 'split',
+		time: {
+			totalDuration: time - self.wStartTime,
+			lapDuration: time - self.wLastSplit
+		}
+	});
+	
+	self.wLastSplit = time;
 	
 }
