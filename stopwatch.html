@@ -1,5 +1,5 @@
 <button ng-click="start()" type="button">Start</button>
-<button type="button">Split</button>
+<button ng-click="split()" type="button">Split</button>
 <button ng-click="stop()" type="button">Stop</button>
-<button type="button">Reset</button>
-<p>Time: {{totalDuration}}</p>
+<button ng-click="reset()" type="button">Reset</button>
+<p>Time: {{totalDuration | stopwatch}}</p>
