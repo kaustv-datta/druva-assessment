@@ -2,4 +2,9 @@
 <button ng-click="split()" type="button">Split</button>
 <button ng-click="stop()" type="button">Stop</button>
 <button ng-click="reset()" type="button">Reset</button>
-<p>Time: {{totalDuration | stopwatch}}</p>
+<h4>Time:</h4> {{totalDuration | stopwatch}}
+<h4>History:</h4>
+<div ng-repeat="timeObj in history">
+	<p>totalDuration: {{timeObj.totalDuration | stopwatch}}</p>
+	<p>lapDuration: {{timeObj.lapDuration | stopwatch}}</p>
+</div>
