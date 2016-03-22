@@ -21,7 +21,7 @@ app.directive('stopwatch', function () {
 
 				var a = document.createElement('a');
 				a.href = 'data:' + data;
-				a.download = scope.name + '.json';
+				a.download = (scope.name || 'history') + '.json';
 				a.click();
 				
 			}
@@ -44,6 +44,7 @@ app.directive('stopwatch', function () {
 						
 					case 'end':
 						scope.history.push(workerData.time);
+						scope.totalDuration = workerData.time.totalDuration;
 						exportData();
 						break;
 						
@@ -56,7 +57,7 @@ app.directive('stopwatch', function () {
 			}
 			
 			scope.start = function () {
-				console.log('app start');
+//				console.log('app start');
 				
 				if (scope.state === 'idle') {
 					scope.worker = scope.worker || new Worker('worker.js');
@@ -69,7 +70,7 @@ app.directive('stopwatch', function () {
 			};
 			
 			scope.split = function () {
-				console.log('app split');
+//				console.log('app split');
 				
 				if (scope.state === 'busy') {
 					var currentTime = Date.now();
@@ -79,19 +80,21 @@ app.directive('stopwatch', function () {
 			};
 			
 			scope.reset = function () {
-				console.log('app reset');
+//				console.log('app reset');
 				
 				scope.state = 'idle';
 				scope.history = [];
 				scope.totalDuration = 0;
 				
-				scope.worker.terminate();
-				scope.worker = undefined;
+				if (scope.worker) {
+					scope.worker.terminate();
+					scope.worker = undefined;
+				}
 				
 			};
 			
 			scope.stop = function () {
-				console.log('app stop');
+//				console.log('app stop');
 				
 				var currentTime = Date.now();
 				scope.worker.postMessage({msg: 'stop', time: currentTime});
@@ -104,17 +107,18 @@ app.directive('stopwatch', function () {
 });
 
 app.filter('stopwatch', function () {
-	return function (timeInMs) {
-		
-		var hours = Math.floor(timeInMs / 216000);
-		timeInMs %= 216000;
-		
-		var mins = Math.floor(timeInMs / 3600);
-		timeInMs %= 3600;
-		
-		var secs = Math.floor(timeInMs / 60);
-		timeInMs %= 60;
-		
-		return hours + ':' + mins + ':' + secs + ':' + timeInMs;
-	};
+	return filterTime;
 });
+
+function filterTime(timeInMs) {
+	var hours = Math.floor(timeInMs / 36e5);
+	timeInMs %= 36e5;
+	
+	var mins = Math.floor(timeInMs / 6e4);
+	timeInMs %= 6e4;
+	
+	var secs = Math.floor(timeInMs / 1000);
+	timeInMs %= 1000;
+	
+	return hours + ' hr : ' + mins + ' min : ' + secs + ' sec : ' + timeInMs + ' ms';
+}
