@@ -8,10 +8,10 @@ self.wLastSplit = 0;
  */
 
 self.onmessage = function (msg) {
-	console.log('worker onmessage');
+//	console.log('worker onmessage');
 	
 	var uiData = msg.data;
-	console.log(uiData);
+//	console.log(uiData);
 	
     switch (uiData.msg) {
     
